@@ -1,15 +1,34 @@
 package main;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SkillRepository {
+    String path = "C:/Users/Никита/IdeaProjects/crudApp/src/main/resources/skills.txt";
+    List<Skill> skillArrayList = new ArrayList<>();
+
     public Skill getById(Long id) {
         try {
-            File file = new File("C:/Users/Никита/IdeaProjects/javaCore/src/main/resources/skills.txt");
+            String[] skillsAllRecords = readFromFile(path).split("/");
+            for (String s : skillsAllRecords) {
+                String[] skillsRecords = s.split(",");
+                if (Long.parseLong(skillsRecords[0]) == id) {
+                    return new Skill(Long.parseLong(skillsRecords[0]), skillsRecords[1]);
+                }
+
+
+            }
+            return null;
+        } catch (Exception e) {
+            throw new RuntimeException("Error is occurred in readFromFile" + e.getMessage());
+        }
+
+    }
+
+    private String readFromFile(String path) {
+        try {
+            File file = new File(path);
             StringBuilder stringBuilder = new StringBuilder();
             try (FileInputStream in = new FileInputStream(file)) {
                 try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
@@ -17,29 +36,55 @@ public class SkillRepository {
                     while ((line = br.readLine()) != null) {
                         stringBuilder.append(line);
                     }
-                    String fileContent = stringBuilder.toString();
-                    String[] skillsAllRecords = fileContent.split("/");
-                    for (String s:skillsAllRecords){
-                        String[] skillsRecords = s.split(",");
-                        if (Long.parseLong(skillsRecords[0])==id){
-                            return new Skill(Long.parseLong(skillsRecords[0]),skillsRecords[1]);
-                        }
-                    }
                 }
             }
-            return null;
-        }catch (Exception e) {
-            throw new RuntimeException("Error is occurred in getById" + e.getMessage());
+            return stringBuilder.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("Error is occurred in readFromFile" + e.getMessage());
         }
+    }// буфер не закрывается(вроде)
 
-    }
+    private String writeToFile(String text){
+        try (FileWriter writer = new FileWriter(path,true)){
 
-    public List<Skill> getAll() {
+            writer.write(text);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
-    public boolean save(Skill skill) {
+    public List<Skill> getAll() {
 
+        try {
+            String[] skillsAllRecords = readFromFile(path).split("/");
+            for (String s:skillsAllRecords){
+                String[] skillsRecords = s.split(",");
+                skillArrayList.add(new Skill(Long.parseLong(skillsRecords[0]), skillsRecords[1]));
+            }
+        }catch (Exception e) {
+            throw new RuntimeException("Error is occurred in getAll method" + e.getMessage());
+        }
+        return skillArrayList;
+    }
+
+    public boolean save(Skill skill) {
+        try {
+            String[] skillsAllRecords = readFromFile(path).split("/");
+
+            for (String s : skillsAllRecords) {
+                String[] skillsRecords = s.split(",");
+                if (Long.parseLong(skillsRecords[0]) != skill.getId()) {
+                    skill = new Skill(Long.parseLong(skillsRecords[0])+ 1,skill.getName());
+
+                    skillArrayList.add(skill);
+//                    writeToFile();
+                    return true;
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Error is occurred in save method" + e.getMessage());
+        }
         return false;
     }
 
