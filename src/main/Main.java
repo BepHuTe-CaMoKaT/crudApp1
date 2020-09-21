@@ -9,5 +9,6 @@ public class Main {
         System.out.println(skillRepository.getAll());
         System.out.println(skillRepository.save(skill));
         System.out.println(skillRepository.getAll());
+        System.out.println(skillRepository.deleteById(1L));
     }
 }
